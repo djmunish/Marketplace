@@ -16,13 +16,19 @@ A SwiftUI-based marketplace app built with MVVM + CoreData.
 ## 📱 Screenshots
 
 ### 🏠 Home Screen
-![Home](Resources/List.png)
+<img src="Resources/List.png" width="400" />
 
 ### ➕ Create Listing
-![Create](Resources/AddNew.png)
+<img src="Resources/AddNew.png" width="400" />
 
 ### 📦 Listing Detail
-![Detail](Resources/Update.png)
+<img src="Resources/Update.png" width="400" />
+
+### 📦 Sync Status
+<img src="Resources/PendingSync.png" width="400" />
+
+### 📦 Sync Status
+<img src="Resources/Diagram.png" width="400" />
 
 ---
 
