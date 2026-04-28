@@ -24,11 +24,8 @@ A SwiftUI-based marketplace app built with MVVM + CoreData.
 ### 📦 Listing Detail
 <img src="Resources/Update.png" width="400" />
 
-### 📦 Sync Status
+### 🔄 Sync Status
 <img src="Resources/PendingSync.png" width="400" />
-
-### 📦 Sync Status
-<img src="Resources/Diagram.png" width="400" />
 
 ---
 
@@ -38,3 +35,7 @@ A SwiftUI-based marketplace app built with MVVM + CoreData.
 - Repository Pattern
 - Core Data storage
 - UIKit bridge for image picker
+
+### 📈 Architecture Diagram
+<img src="Resources/Diagram.png" width="400" />
+
