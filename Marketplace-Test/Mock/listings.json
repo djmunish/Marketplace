@@ -1,0 +1,18 @@
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "title": "Vintage Camera",
+    "price": 120.50,
+    "updatedAt": "2026-03-20T10:00:00Z",
+    "imagePath": "https://placebear.com/200/300",
+    "syncStatus": "synced"
+  },
+  {
+    "id": "671f9511-f30c-52e5-b827-557766551111",
+    "title": "Mechanical Keyboard",
+    "price": 85.00,
+    "updatedAt": "2026-03-21T12:30:00Z",
+    "imagePath": "https://placebear.com/200/300",
+    "syncStatus": "pending"
+  }
+]
