@@ -21,7 +21,6 @@ class CreateListingViewModel {
     var imageData: Data? = nil
     var syncStatus: SyncStatus = .pending
 
-    // FIX: Added initializer to satisfy the compiler and View requirements
     init(repository: ListingRepositoryProtocol,
          listing: ListingModel? = nil,
          imageStore: ImageStoreProtocol = DefaultImageStore(),

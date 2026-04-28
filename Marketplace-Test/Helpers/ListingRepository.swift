@@ -4,6 +4,8 @@ import Combine
 
 
 protocol ListingRepositoryProtocol {
+    var onDataChanged: (() -> Void)? { get set }
+
     func fetchAllListings() -> [ListingModel]
     func isDatabaseEmpty() throws -> Bool
     func seedIfNeeded() async throws
@@ -115,6 +117,7 @@ class ListingRepository: ObservableObject, ListingRepositoryProtocol {
                         }
                     }
                     try? self.context.save()
+                    self.onDataChanged?()
                 }
             }
         } catch {

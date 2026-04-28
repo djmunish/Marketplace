@@ -29,7 +29,6 @@ class ImageLoader: ObservableObject {
     }
 
     private func loadLocalImage() {
-        // Fix: Use [weak self] to ensure background disk-reads don't leak the loader
         DispatchQueue.global(qos: .userInteractive).async { [weak self] in
             guard let self = self else { return }
             

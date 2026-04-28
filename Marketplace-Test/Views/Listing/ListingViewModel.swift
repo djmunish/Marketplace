@@ -5,7 +5,7 @@ import CoreData
 @MainActor
 @Observable
 class ListingViewModel {
-    let repository: ListingRepositoryProtocol
+    var repository: ListingRepositoryProtocol
 
     var listings: [ListingModel] = [] 
     var isLoading = false
@@ -14,8 +14,8 @@ class ListingViewModel {
     init(repository: ListingRepositoryProtocol) {
         self.repository = repository
 
-        (repository as? ListingRepository)?.onDataChanged = { [weak self] in
-            Task {
+        self.repository.onDataChanged = { [weak self] in
+            Task { @MainActor [weak self] in
                 guard let self else { return }
                 self.listings = self.repository.fetchAllListings()
             }

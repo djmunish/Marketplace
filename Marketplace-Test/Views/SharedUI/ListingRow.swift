@@ -48,7 +48,7 @@ private extension ListingRow {
 // MARK: - Derived State
 private extension ListingRow {
     var titleText: String {
-        listing.title ?? "Untitled"
+        listing.title
     }
 
     var priceText: String {
