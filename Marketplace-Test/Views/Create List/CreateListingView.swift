@@ -46,7 +46,7 @@ struct CreateListingView: View {
 
                 // SECTION 2: Image Selection
                 Section("Photo") {
-                    VStack { // This acts as the anchor point
+                    VStack {
                         if let data = viewModel.imageData, let uiImage = UIImage(data: data) {
 
                             Image(uiImage: uiImage)
@@ -76,9 +76,6 @@ struct CreateListingView: View {
                             }
                         }
                     }
-                    // 💡 MOVE THIS MODIFIER HERE
-                    // Attaching it to the VStack inside the Section ensures
-                    // it anchors to the image placeholder box.
                     .confirmationDialog("Add Photo", isPresented: $showImageSourceOptions) {
                         Button("Camera") { sourceType = .camera; showPicker = true }
                         Button("Photo Library") { sourceType = .photoLibrary; showPicker = true }

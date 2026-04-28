@@ -10,6 +10,7 @@ protocol ListingRepositoryProtocol {
     func seedDatabaseFromJson() async throws
     func createListing(title: String, price: Double, image: Data) async
     func updateListing(listing: ListingModel, title: String, price: Double, newImageData: Data?) async
+    func uploadPendingListings() async
 }
 
 class ListingRepository: ObservableObject, ListingRepositoryProtocol {
@@ -186,6 +187,26 @@ class ListingRepository: ObservableObject, ListingRepositoryProtocol {
             }
 
             try? self.context.save()
+            self.onDataChanged?()
+        }
+    }
+
+    func uploadPendingListings() async {
+        let context = self.context
+
+        await context.perform {
+            let request: NSFetchRequest<Listing> = Listing.fetchRequest()
+            request.predicate = NSPredicate(format: "syncStatus == %@", SyncStatus.pending.rawValue)
+            guard let results = try? context.fetch(request) else { return }
+
+            for listing in results {
+                // Simulate API upload
+                print("Uploading:", listing.title ?? "")
+
+                listing.syncStatusEnum = .synced
+            }
+
+            try? context.save()
             self.onDataChanged?()
         }
     }

@@ -14,7 +14,7 @@ struct PersistenceController {
     let container: NSPersistentContainer
 
     init(inMemory: Bool = false) {
-        // ⚠️ CRITICAL: The name "Marketplace" must match your .xcdatamodeld filename exactly.
+        // ⚠️ CRITICAL: The name "Marketplace_Test" must match your .xcdatamodeld filename exactly.
         container = NSPersistentContainer(name: "Marketplace_Test")
         
         if inMemory {

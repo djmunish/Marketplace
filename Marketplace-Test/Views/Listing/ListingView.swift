@@ -59,6 +59,17 @@ struct ListingView: View {
                             .font(.headline)
                     }
                 }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        Task{
+                            await viewModel.sync()
+                        }
+                    }) {
+                        Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90.circle")
+                            .font(.headline)
+                    }
+                }
+
             }.sheet(item: $activeSheet) { sheet in
                 switch sheet {
                 case .create:
