@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 struct ListingRow: View {
-    @ObservedObject var listing: Listing
+    var listing: ListingModel
 
     var body: some View {
         HStack(spacing: 12) {

@@ -4,13 +4,16 @@ import Combine
 
 
 protocol ListingRepositoryProtocol {
-    func fetchAllListings() -> [Listing]
+    func fetchAllListings() -> [ListingModel]
     func isDatabaseEmpty() throws -> Bool
     func seedIfNeeded() async throws
     func seedDatabaseFromJson() async throws
+    func createListing(title: String, price: Double, image: Data) async
+    func updateListing(listing: ListingModel, title: String, price: Double, newImageData: Data?) async
 }
 
 class ListingRepository: ObservableObject, ListingRepositoryProtocol {
+    var onDataChanged: (() -> Void)?
 
     let container: NSPersistentContainer
     let context: NSManagedObjectContext // Changed to internal so VM can access or use for fetches
@@ -21,12 +24,26 @@ class ListingRepository: ObservableObject, ListingRepositoryProtocol {
     }
 
     // MARK: - Fetching
-    func fetchAllListings() -> [Listing] {
+    func fetchAllListings() -> [ListingModel] {
         let request: NSFetchRequest<Listing> = Listing.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(keyPath: \Listing.updatedAt, ascending: true)]
-        
+        request.sortDescriptors = [
+            NSSortDescriptor(keyPath: \Listing.updatedAt, ascending: true)
+        ]
+
         do {
-            return try context.fetch(request)
+            let results = try context.fetch(request)
+
+            return results.map { entity in
+                ListingModel(
+                    id: entity.id ?? UUID(),
+                    title: entity.title ?? "",
+                    price: entity.price,
+                    imagePath: entity.imagePath,
+                    updatedAt: entity.updatedAt,
+                    syncStatusEnum: entity.syncStatusEnum
+                )
+            }
+
         } catch {
             print("❌ Fetch failed: \(error)")
             return []
@@ -101,6 +118,75 @@ class ListingRepository: ObservableObject, ListingRepositoryProtocol {
             }
         } catch {
             print("Seeding failed: \(error)")
+        }
+    }
+
+    // MARK: - Create Listing (Offline First)
+    func createListing(title: String, price: Double, image: Data) async {
+        await context.perform {
+            let newListing = Listing(context: self.context)
+
+            let id = UUID()
+            newListing.id = id
+            newListing.title = title
+            newListing.price = price
+            newListing.updatedAt = Date()
+            newListing.syncStatusEnum = .pending
+
+            let filename = id.uuidString + ".jpg"
+            newListing.imagePath = filename
+
+            do {
+                try ImageStore.saveImageToDisk(data: image, fileName: filename)
+            } catch {
+                print("❌ Failed to save image:", error)
+            }
+
+            do {
+                try self.context.save()
+                self.onDataChanged?()
+            } catch {
+                print("❌ Core Data save failed:", error)
+            }
+        }
+    }
+
+    func updateListing(listing: ListingModel, title: String, price: Double, newImageData: Data?) async {
+
+        await context.perform {
+
+            let request: NSFetchRequest<Listing> = Listing.fetchRequest()
+            request.predicate = NSPredicate(format: "id == %@", listing.id as CVarArg)
+            request.fetchLimit = 1
+
+            guard let listingToUpdate = try? self.context.fetch(request).first
+            else {
+                print("❌ Failed to find listing for update")
+                return
+            }
+
+            listingToUpdate.title = title
+            listingToUpdate.price = price
+            listingToUpdate.updatedAt = Date()
+            listingToUpdate.syncStatusEnum = .pending
+
+            if let newData = newImageData {
+                if let filename = listingToUpdate.imagePath {
+                    let oldPath = ImageStore.getURLForFilename(filename)
+                    try? FileManager.default.removeItem(at: oldPath)
+                }
+
+                let filename = UUID().uuidString + ".jpg"
+                do {
+                    try ImageStore.saveImageToDisk(data: newData, fileName: filename)
+                    listingToUpdate.imagePath = filename
+                } catch {
+                    print("❌ Failed to save image:", error)
+                }
+            }
+
+            try? self.context.save()
+            self.onDataChanged?()
         }
     }
 }

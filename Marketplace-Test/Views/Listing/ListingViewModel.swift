@@ -7,7 +7,7 @@ import CoreData
 class ListingViewModel {
     let repository: ListingRepositoryProtocol
 
-    var listings: [Listing] = [] 
+    var listings: [ListingModel] = []
     var isLoading = false
     var errorMessage: String?
 
@@ -31,9 +31,5 @@ class ListingViewModel {
 
     func fetchFromCoreData() {
         self.listings = repository.fetchAllListings()
-    }
-
-    func sync() async {
-        await repository.uploadPendingListings()
     }
 }
