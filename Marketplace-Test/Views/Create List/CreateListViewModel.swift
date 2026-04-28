@@ -9,6 +9,7 @@ import Foundation
 import Observation
 import CoreData
 
+@MainActor
 @Observable
 class CreateListingViewModel {
     let repository: ListingRepositoryProtocol

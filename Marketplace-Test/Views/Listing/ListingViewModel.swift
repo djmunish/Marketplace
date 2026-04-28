@@ -6,6 +6,7 @@ import CoreData
 @Observable
 class ListingViewModel {
     var repository: ListingRepositoryProtocol
+    private var cancellables = Set<AnyCancellable>()
 
     var listings: [ListingModel] = [] 
     var isLoading = false
@@ -13,13 +14,7 @@ class ListingViewModel {
 
     init(repository: ListingRepositoryProtocol) {
         self.repository = repository
-
-        self.repository.onDataChanged = { [weak self] in
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                self.listings = self.repository.fetchAllListings()
-            }
-        }
+        bind()
     }
 
     func loadEvents() async {
@@ -43,5 +38,14 @@ class ListingViewModel {
     func sync() async {
         await repository.uploadPendingListings()
         listings = repository.fetchAllListings()
+    }
+
+    private func bind() {
+        repository.listingsPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] items in
+                self?.listings = items
+            }
+            .store(in: &cancellables)
     }
 }

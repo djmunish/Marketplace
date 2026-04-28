@@ -4,7 +4,7 @@ import Combine
 
 
 protocol ListingRepositoryProtocol {
-    var onDataChanged: (() -> Void)? { get set }
+    var listingsPublisher: AnyPublisher<[ListingModel], Never> { get }
 
     func fetchAllListings() -> [ListingModel]
     func isDatabaseEmpty() throws -> Bool
@@ -16,7 +16,11 @@ protocol ListingRepositoryProtocol {
 }
 
 class ListingRepository: ObservableObject, ListingRepositoryProtocol {
-    var onDataChanged: (() -> Void)?
+    // 🔥 Combine stream of listings
+    private let listingsSubject = CurrentValueSubject<[ListingModel], Never>([])
+    var listingsPublisher: AnyPublisher<[ListingModel], Never> {
+        listingsSubject.eraseToAnyPublisher()
+    }
 
     let container: NSPersistentContainer
     let context: NSManagedObjectContext // Changed to internal so VM can access or use for fetches
@@ -117,7 +121,7 @@ class ListingRepository: ObservableObject, ListingRepositoryProtocol {
                         }
                     }
                     try? self.context.save()
-                    self.onDataChanged?()
+                    self.refreshListings()
                 }
             }
         } catch {
@@ -148,7 +152,7 @@ class ListingRepository: ObservableObject, ListingRepositoryProtocol {
 
             do {
                 try self.context.save()
-                self.onDataChanged?()
+                self.refreshListings()
             } catch {
                 print("❌ Core Data save failed:", error)
             }
@@ -190,7 +194,7 @@ class ListingRepository: ObservableObject, ListingRepositoryProtocol {
             }
 
             try? self.context.save()
-            self.onDataChanged?()
+            self.refreshListings()
         }
     }
 
@@ -210,7 +214,35 @@ class ListingRepository: ObservableObject, ListingRepositoryProtocol {
             }
 
             try? context.save()
-            self.onDataChanged?()
+            self.refreshListings()
+        }
+    }
+
+    private func refreshListings() {
+        let request: NSFetchRequest<Listing> = Listing.fetchRequest()
+
+        request.sortDescriptors = [
+            NSSortDescriptor(keyPath: \Listing.updatedAt, ascending: true)
+        ]
+
+        do {
+            let results = try context.fetch(request)
+
+            let mapped = results.map {
+                ListingModel(
+                    id: $0.id ?? UUID(),
+                    title: $0.title ?? "",
+                    price: $0.price,
+                    imagePath: $0.imagePath,
+                    updatedAt: $0.updatedAt,
+                    syncStatusEnum: $0.syncStatusEnum
+                )
+            }
+
+            listingsSubject.send(mapped)
+
+        } catch {
+            print("❌ Fetch failed:", error)
         }
     }
 }
